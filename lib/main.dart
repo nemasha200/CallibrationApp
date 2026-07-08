@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'firebase_options.dart';
 import 'clients_screen.dart';
 import 'equipment_screen.dart';
 import 'schedule_screen.dart';
 import 'alerts_screen.dart';
+import 'login_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const SulecoApp());
 }
 
@@ -20,7 +28,31 @@ class SulecoApp extends StatelessWidget {
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: const Color(0xFFF5F5F7),
       ),
-      home: const HomeScreen(),
+      home: const AuthGate(),
+    );
+  }
+}
+
+// Decides whether to show Login or Home based on current Firebase session
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: Color(0xFFF5F5F7),
+            body: Center(child: CircularProgressIndicator(color: Colors.deepPurple)),
+          );
+        }
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        }
+        return const LoginScreen();
+      },
     );
   }
 }
@@ -78,43 +110,50 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
-              ),
-              borderRadius: BorderRadius.circular(12),
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF8B5CF6), Color(0xFFD946EF)],
             ),
-            child: const Icon(Icons.build, color: Colors.white, size: 22),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 10),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('SULECO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              Text('Calibrations', style: TextStyle(color: Colors.grey, fontSize: 12)),
-            ],
+          child: const Icon(Icons.build, color: Colors.white, size: 22),
+        ),
+        const SizedBox(width: 10),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('SULECO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            Text('Calibrations', style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
+        const Spacer(),
+        OutlinedButton.icon(
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            if (!context.mounted) return;
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+            );
+          },
+          icon: const Icon(Icons.logout, size: 16, color: Colors.deepPurple),
+          label: const Text('Exit', style: TextStyle(color: Colors.deepPurple)),
+          style: OutlinedButton.styleFrom(
+            side: const BorderSide(color: Colors.deepPurple),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           ),
-          const Spacer(),
-          OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.logout, size: 16, color: Colors.deepPurple),
-            label: const Text('Exit', style: TextStyle(color: Colors.deepPurple)),
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.deepPurple),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildGoodMorningCard() {
     return Padding(

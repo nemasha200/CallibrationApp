@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "683436057305",
+    "project_id": "hello34-8ea99",
+    "storage_bucket": "hello34-8ea99.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:683436057305:android:7560d7a66ac84b5e5e14c8",
+        "android_client_info": {
+          "package_name": "com.example.callibration_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEQSoTiAyCpZy1Ni3Yc-osOrr3UNmNMnY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
